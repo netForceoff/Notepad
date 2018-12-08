@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ru" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+  </head>
+  <style media="screen">
+    .dateList {
+      width: 100px;
+      height: 200px;
+      border: 1px solid red;
+      border-radius: 10px;
+
+    }
+    .tasks {
+      position: absolute;
+      top: 5px;
+      left: 130px;
+      width: 500px;
+      height: 500px;
+      border: 1px solid green;
+      border-radius: 10px;
+      display: block;
+    }
+    .taskInput {
+      width: 300px;
+      height: 20px;
+      display: block;
+      position: relative;
+      top: 30px;
+      left: 100px;
+      border: 1px solid blue;
+      border-radius: 5px;
+    }
+    li {
+      position: relative;
+      left: 100px;
+      padding: 10px;
+
+    }
+    a:hover {
+      display: block;
+      width: 100%;
+      background: blue;
+    }
+  </style>
+  <body>
+    <div class="dateList">
+    </div>
+    <div class="tasks">
+      <input type="text" placeholder="Введите текущую задачу" class = 'taskInput'><br>
+      <ul>
+      </ul>
+    </div>
+
+    <script type="text/javascript">
+    initNotepad();
+    //Создание блокнота
+    function initNotepad() {
+      let dateList = document.querySelector('.dateList');
+      let tasksList = document.querySelector('.tasks');
+      let inputTask = document.querySelector('input');
+      let ulTasks = document.querySelector('ul');
+      let dateArr = [];
+
+      dateArr = getAll('saveDate');
+      let textArr;
+
+      if (dateArr == null) {
+        dateArr = [];
+      }
+      console.log(dateArr);
+      //Создание кнопок на каждую дату с существующим списком
+      createSavingDateInButtonDateWithText(dateArr, dateList, ulTasks, tasksList, inputTask, textArr);
+
+      window.onunload = function() {
+        saveAll('saveDate', dateArr);
+      //  localStorage.clear();
+      }
+    }
+
+    function createSavingDateInButtonDateWithText(dateArr, dateList, ulTasks, tasksList, inputTask, textArr) {
+      //Создание массива, в который кладется дата текущего/не текущего дня
+      dateArr = addDateOnDateArray(dateList, ulTasks, dateArr);
+
+      for (var i = 0; i < dateArr.length; i++) {
+        let a = document.createElement('a');
+        a.innerHTML = dateArr[i] + '<br>';
+        textArr = getAll(i);
+        if (textArr == null) {
+          textArr  = [];
+        }
+          console.log(i);
+        //Добавление списка задач на каждую кнопку
+        addClickOnButtonDate(a, ulTasks, textArr, i, tasksList, inputTask, dateList);
+        dateList.appendChild(a);
+      }
+
+    }
+
+    function addDateOnDateArray(dateList, ulTasks, dateArr) {
+      let date = new Date();
+      let str = date.getDate() + '.' + parseInt(date.getMonth()+1) + '.' + date.getFullYear();
+      dateArr.push(str);
+
+      for (var i = 0; i < dateArr.length; i++) {
+        if (dateArr[i] == dateArr[i+1]) {
+          dateArr.pop();
+        }
+      }
+
+      return dateArr;
+    }
+
+    function addClickOnButtonDate(a, ulTasks, textArr, i, tasksList, inputTask, dateList) {
+
+      a.addEventListener('click', function() {
+        ulTasks.innerHTML = '';
+        //Создание возможности добавления новых задач
+        addTextOnTasksList(tasksList, inputTask, ulTasks, textArr, i);;
+        //Добавление существующих задач на дату
+        addSavingTextOnTasksList(textArr, ulTasks);
+          console.log(i);
+          console.log(textArr);
+      });
+    }
+
+    function addSavingTextOnTasksList(textArr, ulTasks) {
+      for (var i = 0; i < textArr.length; i++) {
+        let li = document.createElement('li');
+        li.innerHTML = textArr[i];
+        ulTasks.appendChild(li);
+      }
+    }
+
+    function addTextOnTasksList(tasksList, inputTask, ulTasks, textArr, i) {
+      inputTask.addEventListener('keyup', function() {
+        if (event.keyCode == 13 && inputTask.value != '') {
+          let li = document.createElement('li');
+          li.innerHTML = inputTask.value;
+          ulTasks.appendChild(li);
+          textArr.push(inputTask.value);
+          console.log(textArr);
+          inputTask.value = '';
+          saveAll(i, textArr);
+        }
+      });
+    }
+
+    function saveAll (id, data) {
+      localStorage.setItem(id, JSON.stringify(data));
+    }
+
+    function getAll (id) {
+      let json = localStorage.getItem(id);
+      return JSON.parse(json);
+    }
+
+    </script>
+  </body>
+  </html>
